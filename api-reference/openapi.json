@@ -1,217 +1,741 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
-    "license": {
-      "name": "MIT"
-    },
+    "title": "Anyway Docs",
+    "description": "",
     "version": "1.0.0"
   },
-  "servers": [
-    {
-      "url": "http://sandbox.mintlify.com"
-    }
-  ],
-  "security": [
-    {
-      "bearerAuth": []
-    }
-  ],
+  "tags": [],
   "paths": {
-    "/plants": {
+    "/v1/hello": {
       "get": {
-        "description": "Returns all plants from the system that the user has access to",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
+        "summary": "HelloWorld",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
         "responses": {
           "200": {
-            "description": "Plant response",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
-                  }
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "environment": {
+                          "type": "string"
+                        },
+                        "service": {
+                          "type": "string"
+                        },
+                        "version": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        },
+                        "uptime": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "environment",
+                        "service",
+                        "version",
+                        "status",
+                        "timestamp",
+                        "uptime"
+                      ]
+                    },
+                    "error": {
+                      "type": "null"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "error"
+                  ]
                 }
               }
-            }
-          },
-          "400": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "description": "Creates a new plant in the store",
-        "requestBody": {
-          "description": "Plant to add to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Plant"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID of plant to delete",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  "webhooks": {
-    "/plant/webhook": {
-      "post": {
-        "description": "Information about a new plant added to the store",
-        "requestBody": {
-          "description": "Plant added to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
+            },
+            "headers": {}
           }
         },
-        "responses": {
-          "200": {
-            "description": "Return a 200 status to indicate that the data was received successfully"
-          }
-        }
-      }
-    }
-  },
-  "components": {
-    "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
-          },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
-          }
-        }
-      },
-      "NewPlant": {
-        "allOf": [
+        "security": [
           {
-            "$ref": "#/components/schemas/Plant"
-          },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
-              }
-            }
+            "apikey-header-x-api-key": []
           }
         ]
-      },
-      "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "message": {
-            "type": "string"
-          }
-        }
       }
     },
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
+    "/v1/subscriptions/setup": {
+      "post": {
+        "summary": "Subscription Setup",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "x-org-id",
+            "in": "header",
+            "description": "Organization Id of merchant eg: ORG25G1L8TB5G03N1",
+            "example": "{{orgId}}",
+            "schema": {
+              "type": "string",
+              "default": "{{orgId}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "productId": {
+                    "type": "string"
+                  },
+                  "setupSuccessUrl": {
+                    "type": "string"
+                  },
+                  "setupCancelUrl": {
+                    "type": "string"
+                  },
+                  "webhookUrl": {
+                    "type": "string"
+                  },
+                  "customerEmail": {
+                    "type": "string"
+                  },
+                  "customerFirstName": {
+                    "type": "string"
+                  },
+                  "customerLastName": {
+                    "type": "string"
+                  },
+                  "customerCountry": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "productId",
+                  "setupSuccessUrl",
+                  "customerEmail",
+                  "customerFirstName",
+                  "customerLastName",
+                  "customerCountry"
+                ]
+              },
+              "example": {
+                "productId": "8iq40gcl3285",
+                "setupSuccessUrl": "https://anyway.sh",
+                "setupCancelUrl": "https://failed.com",
+                "webhookUrl": "https://anyway.sh",
+                "customerEmail": "jbaker@gmail.com",
+                "customerFirstName": "Johnny",
+                "customerLastName": "Baker",
+                "customerCountry": "USA"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "records": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "orderId": {
+                                "type": "string"
+                              },
+                              "productId": {
+                                "type": "string"
+                              },
+                              "productName": {
+                                "type": "string"
+                              },
+                              "productPricingType": {
+                                "type": "string"
+                              },
+                              "status": {
+                                "type": "string"
+                              },
+                              "priceAmount": {
+                                "type": "number"
+                              },
+                              "currency": {
+                                "type": "string"
+                              },
+                              "paymentMethod": {
+                                "type": "string"
+                              },
+                              "feeAmount": {
+                                "type": "number"
+                              },
+                              "createdAt": {
+                                "type": "string"
+                              },
+                              "updatedAt": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "orderId",
+                              "productId",
+                              "productName",
+                              "productPricingType",
+                              "status",
+                              "priceAmount",
+                              "currency",
+                              "paymentMethod",
+                              "feeAmount",
+                              "createdAt",
+                              "updatedAt"
+                            ]
+                          }
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "size": {
+                          "type": "integer"
+                        },
+                        "current": {
+                          "type": "integer"
+                        },
+                        "pages": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "records",
+                        "total",
+                        "size",
+                        "current",
+                        "pages"
+                      ]
+                    },
+                    "error": {
+                      "type": "null"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/v1/orders": {
+      "get": {
+        "summary": "Fetch Orders",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "x-org-id",
+            "in": "header",
+            "description": "Organization Id of merchant eg: ORG25G1L8TB5G03N1",
+            "example": "{{orgId}}",
+            "schema": {
+              "type": "string",
+              "default": "{{orgId}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "records": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "orderId": {
+                                "type": "string"
+                              },
+                              "productId": {
+                                "type": "string"
+                              },
+                              "productName": {
+                                "type": "string"
+                              },
+                              "productPricingType": {
+                                "type": "string"
+                              },
+                              "status": {
+                                "type": "string"
+                              },
+                              "priceAmount": {
+                                "type": "number"
+                              },
+                              "currency": {
+                                "type": "string"
+                              },
+                              "paymentMethod": {
+                                "type": "string"
+                              },
+                              "feeAmount": {
+                                "type": "number"
+                              },
+                              "createdAt": {
+                                "type": "string"
+                              },
+                              "updatedAt": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "orderId",
+                              "productId",
+                              "productName",
+                              "productPricingType",
+                              "status",
+                              "priceAmount",
+                              "currency",
+                              "paymentMethod",
+                              "feeAmount",
+                              "createdAt",
+                              "updatedAt"
+                            ]
+                          }
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "size": {
+                          "type": "integer"
+                        },
+                        "current": {
+                          "type": "integer"
+                        },
+                        "pages": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "records",
+                        "total",
+                        "size",
+                        "current",
+                        "pages"
+                      ]
+                    },
+                    "error": {
+                      "type": "null"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "error"
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/v1/orders/{orderId}": {
+      "get": {
+        "summary": "Fetch Order",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-org-id",
+            "in": "header",
+            "description": "Organization Id of merchant eg: ORG25G1L8TB5G03N1",
+            "example": "{{orgId}}",
+            "schema": {
+              "type": "string",
+              "default": "{{orgId}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "orderId": {
+                          "type": "string"
+                        },
+                        "productId": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "priceCents": {
+                          "type": "integer"
+                        },
+                        "pricePrecision": {
+                          "type": "integer"
+                        },
+                        "currency": {
+                          "type": "string"
+                        },
+                        "paymentMethod": {
+                          "type": "string"
+                        },
+                        "billingEmail": {
+                          "type": "string"
+                        },
+                        "billingName": {
+                          "type": "string"
+                        },
+                        "createdAt": {
+                          "type": "string"
+                        },
+                        "updatedAt": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "orderId",
+                        "productId",
+                        "status",
+                        "priceCents",
+                        "pricePrecision",
+                        "currency",
+                        "paymentMethod",
+                        "billingEmail",
+                        "billingName",
+                        "createdAt",
+                        "updatedAt"
+                      ]
+                    },
+                    "error": {
+                      "type": "null"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "error"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "message": "Order retrieved successfully",
+                  "data": {
+                    "orderId": "ORD25110613331397103N10XKP3D",
+                    "productId": "ORG25G1L8TB5G03N1_otkoescjnn0b",
+                    "status": "PENDING",
+                    "priceCents": 10,
+                    "pricePrecision": 2,
+                    "currency": "USD",
+                    "paymentMethod": "CARD",
+                    "billingEmail": "jbaker@gmail.com",
+                    "billingName": "Johnny Baker",
+                    "createdAt": "2025-11-06T13:33:14",
+                    "updatedAt": "2025-11-06T13:33:14"
+                  },
+                  "error": null
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/v1/subscriptions/v2/setup": {
+      "post": {
+        "summary": "Subscription Setup V2",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "x-org-id",
+            "in": "header",
+            "description": "Organization Id of merchant eg: ORG25G1L8TB5G03N1",
+            "example": "{{orgId}}",
+            "schema": {
+              "type": "string",
+              "default": "{{orgId}}"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "productId": {
+                    "type": "string"
+                  },
+                  "setupSuccessUrl": {
+                    "type": "string"
+                  },
+                  "setupCancelUrl": {
+                    "type": "string"
+                  },
+                  "webhookUrl": {
+                    "type": "string"
+                  },
+                  "customerEmail": {
+                    "type": "string"
+                  },
+                  "customerFirstName": {
+                    "type": "string"
+                  },
+                  "customerLastName": {
+                    "type": "string"
+                  },
+                  "customerCountry": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "productId",
+                  "setupSuccessUrl",
+                  "customerEmail",
+                  "customerFirstName",
+                  "customerLastName",
+                  "customerCountry"
+                ]
+              },
+              "example": {
+                "productId": "8iq40gcl3285",
+                "setupSuccessUrl": "https://anyway.sh",
+                "setupCancelUrl": "https://failed.com",
+                "webhookUrl": "https://anyway.sh",
+                "customerEmail": "jbaker@gmail.com",
+                "customerFirstName": "Johnny",
+                "customerLastName": "Baker",
+                "customerCountry": "USA"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "paymentUrl": {
+                          "type": "string"
+                        },
+                        "orderId": {
+                          "type": "string"
+                        },
+                        "setupJwtToken": {
+                          "type": "null"
+                        },
+                        "subscriptionId": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "expiresIn": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "paymentUrl",
+                        "orderId",
+                        "setupJwtToken",
+                        "subscriptionId",
+                        "status",
+                        "expiresIn"
+                      ]
+                    },
+                    "error": {
+                      "type": "null"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "message",
+                    "data",
+                    "error"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "message": "Subscription setup created successfully. Redirect customer to setup_url.",
+                  "data": {
+                    "paymentUrl": "https://payment.dev.anyway.sh/pay?token=eyJhbGciOiJIUzM4NCJ9.eyJvcmRlcklkIjoiUElfM2Y0MmJlMWZjOTEyNDZhYzg3ODc2M2M2NWM0ODJkYzMiLCJtZXJjaGFudElkIjoiT1JHMjVHMUw4VEI1RzAzTjEiLCJ0eXBlIjoic3Vic2NyaXB0aW9uX3NldHVwIiwic3Vic2NyaXB0aW9uSWQiOiJzdWJfZjZmZDZkNDRmZjJmNDk1ODhjMGEwNzEwZTc1ZjU2ZjYiLCJzdWIiOiJQSV8zZjQyYmUxZmM5MTI0NmFjODc4NzYzYzY1YzQ4MmRjMyIsImlhdCI6MTc2MDQxMDAyMCwiZXhwIjoxNzYwNDEzNjIwfQ.ZUU3FlKnylD7lBL0VEhhnzy6D8TLwZg8u9OT-TeMhJxhKqR0cUkRGxXywZVyfozz",
+                    "orderId": "PI_3f42be1fc91246ac878763c65c482dc3",
+                    "setupJwtToken": null,
+                    "subscriptionId": "sub_f6fd6d44ff2f49588c0a0710e75f56f6",
+                    "status": "PAYMENT_PENDING",
+                    "expiresIn": 3600000
+                  },
+                  "error": null
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/v1/subscriptions/internal/pay": {
+      "get": {
+        "summary": "Query Payment",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": "eyJhbGciOiJIUzM4NCJ9.eyJvcmRlcklkIjoiT1JEMjUxMTA0MDkyNzM1MTk0WDRNVEUyNExDOCIsIm1lcmNoYW50SWQiOiJPUkcyNVRaM0lDVjA1WDRNVCIsInR5cGUiOiJzdWJzY3JpcHRpb25fc2V0dXAiLCJzdWJzY3JpcHRpb25JZCI6IlNVQjI1MTEwNDA5MjczNTE5NFg0TVRFMjRMQzgiLCJzdWIiOiJPUkQyNTExMDQwOTI3MzUxOTRYNE1URTI0TEM4IiwiaWF0IjoxNzYyMjE5NjU1LCJleHAiOjE3NjIyMjMyNTV9.LOVgIzX5V7YUXED5j03N8eBWc-LiJg1p9FWgZx7p2_SGcy757KE7XsblbOslNSVx",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-org-id",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "ORG25G1L8TB5G03N1",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "ak_Na5CpXyeNtI2fmGzsWdAhlXnUI5xcHWW_WI6oXQkYHs",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
       }
     }
-  }
+  },
+  "webhooks": {},
+  "components": {
+    "schemas": {},
+    "securitySchemes": {
+      "apikey-header-x-api-key": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key"
+      }
+    }
+  },
+  "servers": []
 }
