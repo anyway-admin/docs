@@ -1,0 +1,156 @@
+---
+title: "Concepts"
+description: "Learn the fundamentals of AI observability and OpenTelemetry"
+icon: "book"
+---
+
+## What is AI Observability?
+
+AI observability is the practice of monitoring, understanding, and debugging AI applications in production. For LLM-based applications, this means tracking:
+
+- **What** - The inputs and outputs of AI model calls
+- **How** - Performance metrics like latency and token usage
+- **How much** - Cost attribution and spending
+- **Why** - Error tracking and debugging information
+
+## OpenTelemetry
+
+Anyway is built on [OpenTelemetry](https://opentelemetry.io/) (OTel), the industry-standard framework for observability. OTel provides:
+
+- Vendor-neutral instrumentation
+- Standard data formats
+- Wide ecosystem support
+
+This means your telemetry data is portable and can be exported to other tools if needed.
+
+## Traces
+
+A **trace** represents a single logical operation in your application, such as handling a user request. Traces help you understand the flow of requests through your system.
+
+```
+Trace: handle-user-message
+├── validate-input (2ms)
+├── retrieve-context (15ms)
+├── openai.chat.completions (1,234ms)
+├── format-response (3ms)
+└── send-response (5ms)
+```
+
+### Trace ID
+
+Every trace has a unique ID that allows you to correlate all operations related to a single request:
+
+```
+Trace ID: 4bf92f3577b34da6a3ce929d0e0e4736
+```
+
+## Spans
+
+A **span** represents a single operation within a trace. Spans have:
+
+- **Name** - What operation is being performed
+- **Start time** - When it began
+- **Duration** - How long it took
+- **Attributes** - Key-value metadata
+- **Status** - Success or error
+
+### Span Hierarchy
+
+Spans can be nested to show parent-child relationships:
+
+```
+Trace: user-query
+└── Span: process-query (parent)
+    ├── Span: validate (child)
+    ├── Span: llm-call (child)
+    │   └── Span: openai.chat.completions (grandchild)
+    └── Span: format-response (child)
+```
+
+### Span Attributes
+
+Attributes provide context about each operation:
+
+```python
+{
+    "llm.vendor": "openai",
+    "llm.model": "gpt-4",
+    "llm.tokens.input": 150,
+    "llm.tokens.output": 200,
+    "llm.cost": 0.0135,
+    "user.id": "user-123"
+}
+```
+
+## Metrics
+
+**Metrics** are numerical measurements aggregated over time. Unlike traces (which capture individual requests), metrics summarize patterns:
+
+- **Counter** - Values that only increase (total requests, total tokens)
+- **Gauge** - Point-in-time values (queue size, active connections)
+- **Histogram** - Distribution of values (latency percentiles)
+
+### Common LLM Metrics
+
+| Metric | Type | Description |
+|--------|------|-------------|
+| `llm.requests.total` | Counter | Total API calls |
+| `llm.tokens.total` | Counter | Total tokens used |
+| `llm.cost.total` | Counter | Total spending |
+| `llm.latency_ms` | Histogram | Request duration |
+
+## Context Propagation
+
+Context propagation ensures trace information flows through your application:
+
+```python
+# Parent span
+with anyway.trace("user-request") as parent:
+    # Child span - automatically linked to parent
+    with anyway.trace("database-query"):
+        fetch_user_data()
+
+    # Another child span
+    with anyway.trace("llm-call"):
+        call_openai()
+```
+
+This creates a complete picture of how operations relate to each other.
+
+## Sampling
+
+In high-volume production environments, you may not need to trace every request. **Sampling** controls what percentage of traces are captured:
+
+```python
+anyway.init(sample_rate=0.1)  # 10% of traces
+```
+
+Common sampling strategies:
+
+- **Head-based** - Decide at the start of each trace
+- **Tail-based** - Decide after seeing the full trace (capture all errors)
+- **Priority-based** - Always capture certain operations
+
+## Semantic Conventions
+
+Anyway follows semantic conventions for LLM telemetry, standardizing attribute names:
+
+| Attribute | Description |
+|-----------|-------------|
+| `llm.vendor` | Provider (openai, anthropic) |
+| `llm.model` | Model identifier |
+| `llm.request.type` | Type of request (chat, completion) |
+| `llm.tokens.input` | Input token count |
+| `llm.tokens.output` | Output token count |
+| `llm.response.finish_reason` | Why generation stopped |
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Get started with Anyway in 5 minutes.
+  </Card>
+  <Card title="Tracing" icon="route" href="/features/tracing">
+    Deep dive into distributed tracing.
+  </Card>
+</CardGroup>

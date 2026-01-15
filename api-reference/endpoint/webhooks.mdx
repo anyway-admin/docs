@@ -1,0 +1,263 @@
+---
+title: "Webhooks"
+description: "Configure webhook notifications for events"
+icon: "webhook"
+---
+
+## Overview
+
+Webhooks allow you to receive real-time notifications when events occur in your Anyway account. Configure endpoints to receive HTTP POST requests with event data.
+
+## GET /v1/webhooks
+
+List all configured webhooks.
+
+### Request
+
+```bash
+curl https://api.anyway.sh/v1/webhooks \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "wh_abc123",
+      "url": "https://your-app.com/webhooks/anyway",
+      "events": ["trace.error", "budget.exceeded"],
+      "enabled": true,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-15T10:30:00Z"
+    }
+  ]
+}
+```
+
+---
+
+## POST /v1/webhooks
+
+Create a new webhook.
+
+### Request
+
+```bash
+curl -X POST https://api.anyway.sh/v1/webhooks \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://your-app.com/webhooks/anyway",
+    "events": ["trace.error", "budget.exceeded"],
+    "secret": "your-webhook-secret"
+  }'
+```
+
+### Request Body
+
+<ParamField body="url" type="string" required>
+  The HTTPS URL to send webhook events to.
+</ParamField>
+
+<ParamField body="events" type="array" required>
+  List of events to subscribe to. Available events:
+  - `trace.error` - LLM call returned an error
+  - `trace.slow` - LLM call exceeded latency threshold
+  - `trace.expensive` - LLM call exceeded cost threshold
+  - `budget.warning` - Approaching budget limit
+  - `budget.exceeded` - Budget limit exceeded
+  - `quota.warning` - Approaching usage quota
+  - `quota.exceeded` - Usage quota exceeded
+</ParamField>
+
+<ParamField body="secret" type="string">
+  Optional secret for signing webhook payloads. If provided, all webhook requests will include an `X-Anyway-Signature` header.
+</ParamField>
+
+<ParamField body="enabled" type="boolean" default="true">
+  Whether the webhook is active.
+</ParamField>
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "wh_def456",
+    "url": "https://your-app.com/webhooks/anyway",
+    "events": ["trace.error", "budget.exceeded"],
+    "enabled": true,
+    "secret_set": true,
+    "created_at": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+---
+
+## Webhook Payload
+
+All webhook events follow this format:
+
+```json
+{
+  "id": "evt_abc123",
+  "type": "trace.error",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "data": {
+    // Event-specific data
+  }
+}
+```
+
+### Event: trace.error
+
+```json
+{
+  "id": "evt_abc123",
+  "type": "trace.error",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "data": {
+    "trace_id": "4bf92f3577b34da6a3ce929d0e0e4736",
+    "span_id": "00f067aa0ba902b7",
+    "model": "gpt-4",
+    "error": {
+      "code": "rate_limit_exceeded",
+      "message": "Rate limit exceeded"
+    },
+    "project_id": "proj_abc123"
+  }
+}
+```
+
+### Event: budget.exceeded
+
+```json
+{
+  "id": "evt_def456",
+  "type": "budget.exceeded",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "data": {
+    "budget_id": "budget_abc123",
+    "budget_name": "Monthly Limit",
+    "limit": 100.00,
+    "current_spend": 105.50,
+    "period": "monthly",
+    "project_id": "proj_abc123"
+  }
+}
+```
+
+---
+
+## Verifying Signatures
+
+If you set a webhook secret, verify the `X-Anyway-Signature` header:
+
+```python
+import hmac
+import hashlib
+
+def verify_webhook(payload: bytes, signature: str, secret: str) -> bool:
+    expected = hmac.new(
+        secret.encode(),
+        payload,
+        hashlib.sha256
+    ).hexdigest()
+    return hmac.compare_digest(f"sha256={expected}", signature)
+
+# In your webhook handler
+@app.post("/webhooks/anyway")
+def handle_webhook(request):
+    signature = request.headers.get("X-Anyway-Signature")
+    if not verify_webhook(request.body, signature, WEBHOOK_SECRET):
+        return Response(status=401)
+
+    event = request.json()
+    # Process event...
+```
+
+---
+
+## PATCH /v1/webhooks/:webhook_id
+
+Update a webhook configuration.
+
+### Request
+
+```bash
+curl -X PATCH https://api.anyway.sh/v1/webhooks/wh_abc123 \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "events": ["trace.error", "trace.slow", "budget.exceeded"],
+    "enabled": true
+  }'
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "wh_abc123",
+    "url": "https://your-app.com/webhooks/anyway",
+    "events": ["trace.error", "trace.slow", "budget.exceeded"],
+    "enabled": true,
+    "updated_at": "2024-01-15T11:00:00Z"
+  }
+}
+```
+
+---
+
+## DELETE /v1/webhooks/:webhook_id
+
+Delete a webhook.
+
+### Request
+
+```bash
+curl -X DELETE https://api.anyway.sh/v1/webhooks/wh_abc123 \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+### Response
+
+```
+HTTP/1.1 204 No Content
+```
+
+---
+
+## POST /v1/webhooks/:webhook_id/test
+
+Send a test event to verify your webhook endpoint.
+
+### Request
+
+```bash
+curl -X POST https://api.anyway.sh/v1/webhooks/wh_abc123/test \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "success": true,
+    "response_code": 200,
+    "response_time_ms": 150
+  }
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| `webhook_failed` | Test request failed |
+| `not_found` | Webhook does not exist |

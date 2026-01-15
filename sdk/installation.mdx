@@ -1,0 +1,65 @@
+---
+title: "Installation"
+description: "Install the Anyway Python SDK"
+icon: "download"
+---
+
+## Requirements
+
+- Python 3.10 or higher (< 4.0)
+- pip package manager
+
+## Installation
+
+Install the Anyway SDK using pip:
+
+```bash
+pip install anyway-sdk
+```
+
+Or add it to your `requirements.txt`:
+
+```txt
+anyway-sdk>=0.0.4
+```
+
+## Virtual Environment (Recommended)
+
+We recommend using a virtual environment to manage your Python dependencies:
+
+```bash
+# Create a virtual environment
+python -m venv venv
+
+# Activate it (Linux/macOS)
+source venv/bin/activate
+
+# Activate it (Windows)
+venv\Scripts\activate
+
+# Install the SDK
+pip install anyway-sdk
+```
+
+## Verify Installation
+
+Verify the SDK is installed correctly:
+
+```python
+from anyway.sdk import Traceloop
+
+# Initialize with your app name
+Traceloop.init(app_name="test-app")
+print("SDK installed successfully!")
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="gear" href="/sdk/configuration">
+    Configure the collector endpoint and authentication
+  </Card>
+  <Card title="Tracing LLM Calls" icon="route" href="/sdk/tracing">
+    Start tracing your LLM calls
+  </Card>
+</CardGroup>

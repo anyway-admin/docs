@@ -1,0 +1,171 @@
+---
+title: "Query Metrics"
+description: "Retrieve aggregated metrics from Anyway"
+icon: "chart-line"
+---
+
+## GET /v1/metrics
+
+Query aggregated metrics.
+
+### Request
+
+```bash
+curl "https://api.anyway.sh/v1/metrics?metric=llm.requests.total&interval=1h" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+### Query Parameters
+
+<ParamField query="metric" type="string" required>
+  Metric name to query. Available metrics:
+  - `llm.requests.total`
+  - `llm.requests.errors`
+  - `llm.tokens.input`
+  - `llm.tokens.output`
+  - `llm.tokens.total`
+  - `llm.cost.total`
+  - `llm.latency_ms`
+</ParamField>
+
+<ParamField query="start_time" type="string" required>
+  Start of the time range (ISO 8601).
+</ParamField>
+
+<ParamField query="end_time" type="string" required>
+  End of the time range (ISO 8601).
+</ParamField>
+
+<ParamField query="interval" type="string" default="1h">
+  Aggregation interval: `1m`, `5m`, `15m`, `1h`, `1d`.
+</ParamField>
+
+<ParamField query="aggregation" type="string" default="sum">
+  Aggregation function: `sum`, `avg`, `min`, `max`, `count`, `p50`, `p90`, `p99`.
+</ParamField>
+
+<ParamField query="group_by" type="string">
+  Dimension to group by: `model`, `vendor`, `environment`, `project`.
+</ParamField>
+
+<ParamField query="model" type="string">
+  Filter by model name.
+</ParamField>
+
+<ParamField query="environment" type="string">
+  Filter by environment.
+</ParamField>
+
+### Example: Total Requests by Model
+
+```bash
+curl "https://api.anyway.sh/v1/metrics?\
+metric=llm.requests.total&\
+start_time=2024-01-15T00:00:00Z&\
+end_time=2024-01-16T00:00:00Z&\
+interval=1h&\
+group_by=model" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "metric": "llm.requests.total",
+    "aggregation": "sum",
+    "interval": "1h",
+    "series": [
+      {
+        "group": {
+          "model": "gpt-4"
+        },
+        "datapoints": [
+          {
+            "timestamp": "2024-01-15T00:00:00Z",
+            "value": 1500
+          },
+          {
+            "timestamp": "2024-01-15T01:00:00Z",
+            "value": 1420
+          },
+          {
+            "timestamp": "2024-01-15T02:00:00Z",
+            "value": 890
+          }
+        ]
+      },
+      {
+        "group": {
+          "model": "gpt-4o-mini"
+        },
+        "datapoints": [
+          {
+            "timestamp": "2024-01-15T00:00:00Z",
+            "value": 5200
+          },
+          {
+            "timestamp": "2024-01-15T01:00:00Z",
+            "value": 4800
+          },
+          {
+            "timestamp": "2024-01-15T02:00:00Z",
+            "value": 3100
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+### Example: P99 Latency
+
+```bash
+curl "https://api.anyway.sh/v1/metrics?\
+metric=llm.latency_ms&\
+start_time=2024-01-15T00:00:00Z&\
+end_time=2024-01-16T00:00:00Z&\
+interval=1h&\
+aggregation=p99&\
+group_by=model" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "metric": "llm.latency_ms",
+    "aggregation": "p99",
+    "interval": "1h",
+    "series": [
+      {
+        "group": {
+          "model": "gpt-4"
+        },
+        "datapoints": [
+          {
+            "timestamp": "2024-01-15T00:00:00Z",
+            "value": 2340
+          },
+          {
+            "timestamp": "2024-01-15T01:00:00Z",
+            "value": 2150
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| `invalid_metric` | Unknown metric name |
+| `invalid_interval` | Invalid time interval |
+| `invalid_aggregation` | Invalid aggregation function |

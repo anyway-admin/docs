@@ -1,0 +1,163 @@
+---
+title: "Query Traces"
+description: "Search and retrieve traces from Anyway"
+icon: "magnifying-glass"
+---
+
+## GET /v1/traces
+
+List and search traces.
+
+### Request
+
+```bash
+curl "https://api.anyway.sh/v1/traces?limit=50" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+### Query Parameters
+
+<ParamField query="limit" type="integer" default="50">
+  Number of traces to return (max 100).
+</ParamField>
+
+<ParamField query="cursor" type="string">
+  Pagination cursor for the next page.
+</ParamField>
+
+<ParamField query="start_time" type="string">
+  Filter traces starting after this ISO 8601 timestamp.
+</ParamField>
+
+<ParamField query="end_time" type="string">
+  Filter traces ending before this ISO 8601 timestamp.
+</ParamField>
+
+<ParamField query="model" type="string">
+  Filter by LLM model name.
+</ParamField>
+
+<ParamField query="min_latency_ms" type="integer">
+  Filter traces with latency above this threshold.
+</ParamField>
+
+<ParamField query="min_cost" type="number">
+  Filter traces with cost above this threshold.
+</ParamField>
+
+<ParamField query="status" type="string">
+  Filter by status: `ok`, `error`.
+</ParamField>
+
+### Example
+
+```bash
+curl "https://api.anyway.sh/v1/traces?model=gpt-4&min_latency_ms=1000&limit=20" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "trace_id": "4bf92f3577b34da6a3ce929d0e0e4736",
+      "start_time": "2024-01-15T10:30:00.000Z",
+      "end_time": "2024-01-15T10:30:01.234Z",
+      "duration_ms": 1234,
+      "span_count": 3,
+      "root_span": {
+        "name": "user-query",
+        "attributes": {
+          "user_id": "user-123"
+        }
+      },
+      "llm_summary": {
+        "model": "gpt-4",
+        "tokens_input": 150,
+        "tokens_output": 200,
+        "cost": 0.0135
+      },
+      "status": "ok"
+    }
+  ],
+  "pagination": {
+    "limit": 50,
+    "has_more": true,
+    "next_cursor": "abc123"
+  }
+}
+```
+
+---
+
+## GET /v1/traces/:trace_id
+
+Get a single trace with all spans.
+
+### Request
+
+```bash
+curl https://api.anyway.sh/v1/traces/4bf92f3577b34da6a3ce929d0e0e4736 \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+### Path Parameters
+
+<ParamField path="trace_id" type="string" required>
+  The trace ID to retrieve.
+</ParamField>
+
+### Response
+
+```json
+{
+  "data": {
+    "trace_id": "4bf92f3577b34da6a3ce929d0e0e4736",
+    "start_time": "2024-01-15T10:30:00.000Z",
+    "end_time": "2024-01-15T10:30:01.234Z",
+    "duration_ms": 1234,
+    "spans": [
+      {
+        "span_id": "00f067aa0ba902b7",
+        "parent_span_id": null,
+        "name": "user-query",
+        "start_time": "2024-01-15T10:30:00.000Z",
+        "end_time": "2024-01-15T10:30:01.234Z",
+        "duration_ms": 1234,
+        "attributes": {
+          "user_id": "user-123"
+        },
+        "status": {
+          "code": "OK"
+        }
+      },
+      {
+        "span_id": "00f067aa0ba902b8",
+        "parent_span_id": "00f067aa0ba902b7",
+        "name": "openai.chat.completions",
+        "start_time": "2024-01-15T10:30:00.010Z",
+        "end_time": "2024-01-15T10:30:01.220Z",
+        "duration_ms": 1210,
+        "attributes": {
+          "llm.vendor": "openai",
+          "llm.model": "gpt-4",
+          "llm.tokens.input": 150,
+          "llm.tokens.output": 200,
+          "llm.cost": 0.0135
+        },
+        "status": {
+          "code": "OK"
+        }
+      }
+    ]
+  }
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| `not_found` | Trace does not exist |

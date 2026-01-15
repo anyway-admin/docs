@@ -1,97 +1,103 @@
 ---
 title: "Introduction"
-description: "Welcome to the new home for your documentation"
+description: "AI observability and cost management for your LLM applications"
 ---
 
-## Setting up
+## What is Anyway?
 
-Get your documentation site up and running in minutes.
+Anyway is an AI observability platform that helps you monitor, debug, and optimize your LLM applications. Collect traces, track costs, and gain insights into your AI operations.
+
+```python
+from anyway.sdk import Traceloop
+from anyway.sdk.decorators import workflow, task
+from openai import OpenAI
+
+Traceloop.init(app_name="my-app")
+client = OpenAI()
+
+@task(name="chat")
+def chat(prompt: str) -> str:
+    response = client.chat.completions.create(
+        model="gpt-4",
+        messages=[{"role": "user", "content": prompt}]
+    )
+    return response.choices[0].message.content
+
+@workflow(name="answer_question")
+def answer_question(question: str) -> str:
+    return chat(question)
+
+# Traces are captured with full workflow hierarchy
+result = answer_question("Hello!")
+```
 
 <Card
-  title="Start here"
+  title="Get started in 5 minutes"
   icon="rocket"
   href="/quickstart"
   horizontal
 >
-  Follow our three step quickstart guide.
+  Install the SDK and start tracing your first LLM calls.
 </Card>
 
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
+## Key Features
 
 <Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+  <Card title="Workflow Tracing" icon="wand-magic-sparkles" href="/sdk/tracing">
+    Trace LLM operations with simple @workflow and @task decorators.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Cost Tracking" icon="dollar-sign" href="/features/cost-tracking">
+    Monitor spending in real-time with automatic cost calculation.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Distributed Tracing" icon="route" href="/features/tracing">
+    Follow requests through your entire AI pipeline.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="Custom Dashboards" icon="chart-pie" href="/features/dashboards">
+    Visualize metrics and traces with customizable dashboards.
   </Card>
 </Columns>
 
-## Create beautiful pages
-
-Everything you need to create world-class documentation.
+## Supported Providers
 
 <Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
+  <Card title="OpenAI" icon="robot" href="/sdk/tracing">
+    GPT-4, GPT-4o, GPT-4o-mini, and all OpenAI models.
   </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
+  <Card title="Anthropic" icon="message-bot" href="/sdk/tracing">
+    Claude 3 Opus, Sonnet, Haiku, and all Claude models.
   </Card>
 </Columns>
 
-## Need inspiration?
+## Why Anyway?
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<AccordionGroup>
+  <Accordion title="OpenTelemetry-native" icon="plug">
+    Built on OpenTelemetry standards for maximum compatibility and flexibility.
+  </Accordion>
+  <Accordion title="Low overhead" icon="feather">
+    Minimal performance impact with async, batched telemetry export.
+  </Accordion>
+  <Accordion title="Privacy-first" icon="shield">
+    Control what data is collected. Mask or exclude sensitive content.
+  </Accordion>
+  <Accordion title="Developer-friendly" icon="heart">
+    Simple decorators. Python 3.10+ support. Async-ready. Clear documentation.
+  </Accordion>
+</AccordionGroup>
+
+## Explore
+
+<Columns cols={2}>
+  <Card title="Python SDK" icon="python" href="/sdk/installation">
+    Complete SDK reference and installation guide.
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/introduction">
+    REST API for programmatic access to your data.
+  </Card>
+  <Card title="Concepts" icon="book" href="/concepts">
+    Learn about traces, spans, and AI observability.
+  </Card>
+  <Card title="Pricing" icon="credit-card" href="/billing/overview">
+    Simple, transparent pricing for teams of all sizes.
+  </Card>
+</Columns>

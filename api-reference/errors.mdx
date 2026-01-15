@@ -1,0 +1,207 @@
+---
+title: "Error Codes"
+description: "API error codes and how to handle them"
+icon: "triangle-exclamation"
+---
+
+## Error Response Format
+
+All API errors follow a consistent format:
+
+```json
+{
+  "error": {
+    "code": "error_code",
+    "message": "Human-readable error message",
+    "details": {
+      // Additional context (optional)
+    }
+  },
+  "meta": {
+    "request_id": "req_abc123",
+    "timestamp": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+## HTTP Status Codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `200` | Success |
+| `201` | Created |
+| `204` | No Content |
+| `400` | Bad Request |
+| `401` | Unauthorized |
+| `403` | Forbidden |
+| `404` | Not Found |
+| `409` | Conflict |
+| `422` | Unprocessable Entity |
+| `429` | Too Many Requests |
+| `500` | Internal Server Error |
+
+## Error Codes
+
+### Authentication Errors
+
+| Code | Status | Description |
+|------|--------|-------------|
+| `unauthorized` | 401 | Missing or invalid API key |
+| `invalid_api_key` | 401 | API key is malformed or revoked |
+| `expired_api_key` | 401 | API key has expired |
+| `forbidden` | 403 | API key lacks required permissions |
+
+```json
+{
+  "error": {
+    "code": "unauthorized",
+    "message": "Invalid or missing API key"
+  }
+}
+```
+
+### Validation Errors
+
+| Code | Status | Description |
+|------|--------|-------------|
+| `invalid_request` | 400 | Request body is malformed |
+| `missing_field` | 400 | Required field is missing |
+| `invalid_field` | 422 | Field value is invalid |
+| `invalid_format` | 422 | Field format is incorrect |
+
+```json
+{
+  "error": {
+    "code": "missing_field",
+    "message": "The 'project_id' field is required",
+    "details": {
+      "field": "project_id"
+    }
+  }
+}
+```
+
+### Resource Errors
+
+| Code | Status | Description |
+|------|--------|-------------|
+| `not_found` | 404 | Resource does not exist |
+| `already_exists` | 409 | Resource already exists |
+| `conflict` | 409 | Operation conflicts with current state |
+
+```json
+{
+  "error": {
+    "code": "not_found",
+    "message": "Trace not found",
+    "details": {
+      "trace_id": "abc123"
+    }
+  }
+}
+```
+
+### Rate Limit Errors
+
+| Code | Status | Description |
+|------|--------|-------------|
+| `rate_limited` | 429 | Too many requests |
+
+```json
+{
+  "error": {
+    "code": "rate_limited",
+    "message": "Rate limit exceeded. Retry after 60 seconds",
+    "details": {
+      "retry_after": 60
+    }
+  }
+}
+```
+
+### Server Errors
+
+| Code | Status | Description |
+|------|--------|-------------|
+| `internal_error` | 500 | Unexpected server error |
+| `service_unavailable` | 503 | Service temporarily unavailable |
+
+```json
+{
+  "error": {
+    "code": "internal_error",
+    "message": "An unexpected error occurred"
+  }
+}
+```
+
+## Handling Errors
+
+### Python Example
+
+```python
+import anyway
+
+try:
+    traces = anyway.api.get_traces()
+except anyway.AuthenticationError:
+    print("Check your API key")
+except anyway.RateLimitError as e:
+    time.sleep(e.retry_after)
+    # Retry the request
+except anyway.APIError as e:
+    print(f"API error: {e.code} - {e.message}")
+```
+
+### HTTP Example
+
+```bash
+response=$(curl -s -w "\n%{http_code}" \
+  https://api.anyway.sh/v1/traces \
+  -H "Authorization: Bearer YOUR_API_KEY")
+
+status_code=$(echo "$response" | tail -1)
+body=$(echo "$response" | head -n -1)
+
+if [ "$status_code" -eq 429 ]; then
+  retry_after=$(echo "$body" | jq -r '.error.details.retry_after')
+  sleep $retry_after
+  # Retry the request
+fi
+```
+
+## Request IDs
+
+Every API response includes a `request_id` in the `meta` object. Include this ID when contacting support about errors:
+
+```
+Request ID: req_abc123xyz
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Implement retries with backoff" icon="rotate">
+    For transient errors (429, 500, 503), implement exponential backoff:
+    ```python
+    import time
+
+    def retry_with_backoff(func, max_retries=3):
+        for attempt in range(max_retries):
+            try:
+                return func()
+            except (RateLimitError, ServerError):
+                wait = 2 ** attempt
+                time.sleep(wait)
+        raise Exception("Max retries exceeded")
+    ```
+  </Accordion>
+
+  <Accordion title="Log request IDs" icon="file-lines">
+    Always log the `request_id` from error responses for debugging.
+  </Accordion>
+
+  <Accordion title="Handle rate limits gracefully" icon="gauge">
+    Check the `Retry-After` header or `retry_after` field and wait before retrying.
+  </Accordion>
+</AccordionGroup>

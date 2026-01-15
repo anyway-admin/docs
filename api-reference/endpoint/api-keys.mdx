@@ -1,0 +1,216 @@
+---
+title: "API Keys"
+description: "Manage API keys for authentication"
+icon: "key"
+---
+
+## GET /v1/api-keys
+
+List all API keys for your account.
+
+<Note>
+  API key values are only shown once at creation time. The list endpoint shows masked versions.
+</Note>
+
+### Request
+
+```bash
+curl https://api.anyway.sh/v1/api-keys \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "key_abc123",
+      "name": "Production SDK",
+      "key_prefix": "aw_prod_****",
+      "project_id": "proj_abc123",
+      "permissions": ["write:traces", "read:traces"],
+      "last_used_at": "2024-01-15T10:30:00Z",
+      "created_at": "2024-01-01T00:00:00Z",
+      "expires_at": null
+    },
+    {
+      "id": "key_def456",
+      "name": "Dashboard Read-only",
+      "key_prefix": "aw_read_****",
+      "project_id": null,
+      "permissions": ["read:traces", "read:metrics"],
+      "last_used_at": "2024-01-14T15:20:00Z",
+      "created_at": "2024-01-05T00:00:00Z",
+      "expires_at": "2024-12-31T23:59:59Z"
+    }
+  ]
+}
+```
+
+---
+
+## POST /v1/api-keys
+
+Create a new API key.
+
+<Warning>
+  The API key value is only returned once. Store it securely immediately.
+</Warning>
+
+### Request
+
+```bash
+curl -X POST https://api.anyway.sh/v1/api-keys \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "New SDK Key",
+    "project_id": "proj_abc123",
+    "permissions": ["write:traces", "read:traces"]
+  }'
+```
+
+### Request Body
+
+<ParamField body="name" type="string" required>
+  A descriptive name for the API key.
+</ParamField>
+
+<ParamField body="project_id" type="string">
+  Scope the key to a specific project. Omit for account-wide access.
+</ParamField>
+
+<ParamField body="permissions" type="array" required>
+  List of permissions. Available permissions:
+  - `write:traces` - Ingest telemetry data
+  - `read:traces` - Query traces
+  - `read:metrics` - Query metrics
+  - `manage:projects` - Create/update/delete projects
+  - `manage:api-keys` - Create/revoke API keys
+  - `manage:webhooks` - Configure webhooks
+</ParamField>
+
+<ParamField body="expires_at" type="string">
+  Optional expiration date (ISO 8601). Key never expires if omitted.
+</ParamField>
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "key_ghi789",
+    "name": "New SDK Key",
+    "key": "aw_prod_abc123xyz789...",
+    "key_prefix": "aw_prod_****",
+    "project_id": "proj_abc123",
+    "permissions": ["write:traces", "read:traces"],
+    "created_at": "2024-01-15T10:30:00Z",
+    "expires_at": null
+  }
+}
+```
+
+<Note>
+  The full `key` value is only included in this response. Copy it now!
+</Note>
+
+---
+
+## GET /v1/api-keys/:key_id
+
+Get details about a specific API key.
+
+### Request
+
+```bash
+curl https://api.anyway.sh/v1/api-keys/key_abc123 \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "key_abc123",
+    "name": "Production SDK",
+    "key_prefix": "aw_prod_****",
+    "project_id": "proj_abc123",
+    "permissions": ["write:traces", "read:traces"],
+    "last_used_at": "2024-01-15T10:30:00Z",
+    "last_used_ip": "192.168.1.1",
+    "usage_count": 15420,
+    "created_at": "2024-01-01T00:00:00Z",
+    "expires_at": null
+  }
+}
+```
+
+---
+
+## PATCH /v1/api-keys/:key_id
+
+Update an API key's name or permissions.
+
+### Request
+
+```bash
+curl -X PATCH https://api.anyway.sh/v1/api-keys/key_abc123 \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Updated Key Name",
+    "permissions": ["write:traces", "read:traces", "read:metrics"]
+  }'
+```
+
+### Request Body
+
+<ParamField body="name" type="string">
+  New name for the API key.
+</ParamField>
+
+<ParamField body="permissions" type="array">
+  Updated list of permissions.
+</ParamField>
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "key_abc123",
+    "name": "Updated Key Name",
+    "permissions": ["write:traces", "read:traces", "read:metrics"],
+    "updated_at": "2024-01-15T11:00:00Z"
+  }
+}
+```
+
+---
+
+## DELETE /v1/api-keys/:key_id
+
+Revoke an API key. The key will immediately stop working.
+
+### Request
+
+```bash
+curl -X DELETE https://api.anyway.sh/v1/api-keys/key_abc123 \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+### Response
+
+```
+HTTP/1.1 204 No Content
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| `not_found` | API key does not exist |
+| `conflict` | Cannot revoke the last admin key |

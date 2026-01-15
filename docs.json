@@ -14,55 +14,57 @@
         "tab": "Guides",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Getting Started",
+            "pages": ["index", "quickstart", "concepts"]
+          },
+          {
+            "group": "Python SDK",
             "pages": [
-              "index",
-              "quickstart",
-              "development"
+              "sdk/installation",
+              "sdk/configuration",
+              "sdk/tracing"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Features",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "features/tracing",
+              "features/metrics",
+              "features/cost-tracking",
+              "features/dashboards"
             ]
           },
           {
-            "group": "Writing content",
-            "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
-            ]
-          },
-          {
-            "group": "AI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
-            ]
+            "group": "Billing",
+            "pages": ["billing/overview", "billing/usage-limits"]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "API Reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Overview",
+            "pages": ["api-reference/introduction", "api-reference/errors"]
+          },
+          {
+            "group": "Telemetry",
             "pages": [
-              "api-reference/introduction"
+              "api-reference/endpoint/ingest",
+              "api-reference/endpoint/query-traces",
+              "api-reference/endpoint/query-metrics"
             ]
           },
           {
-            "group": "Merchant Endpoints",
+            "group": "Projects & Keys",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/webhook"
+              "api-reference/endpoint/projects",
+              "api-reference/endpoint/api-keys"
             ]
+          },
+          {
+            "group": "Webhooks",
+            "pages": ["api-reference/endpoint/webhooks"]
           }
         ]
       }
@@ -71,8 +73,8 @@
       "anchors": [
         {
           "anchor": "Anyway Home",
-          "href": "https://move.anyway.sh",
-          "icon": "desktop"
+          "href": "https://anyway.sh",
+          "icon": "house"
         }
       ]
     }

@@ -1,32 +1,147 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: "API Introduction"
+description: "Getting started with the Anyway REST API"
+icon: "code"
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+## Overview
 
-## Welcome
+The Anyway REST API allows you to programmatically access your telemetry data, manage projects, and configure your account.
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
-
-<Card
-  title="Anyway Endpoints"
-  href="https://github.com/<your-org>/<your-repo>/blob/main/api-specs/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+**Base URL:**
+```
+https://api.anyway.sh/v1
+```
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+All API requests require authentication using a Bearer token.
+
+### Getting an API Key
+
+1. Log in to your [Dashboard](https://webapp.anyway.sh)
+2. Go to **Settings** > **API Keys**
+3. Click **Create New Key**
+4. Copy your key (it won't be shown again)
+
+### Using the API Key
+
+Include your API key in the `Authorization` header:
+
+```bash
+curl https://api.anyway.sh/v1/traces \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+<Warning>
+  Keep your API keys secure. Never expose them in client-side code or public repositories.
+</Warning>
+
+## Request Format
+
+- All requests should use HTTPS
+- Request bodies should be JSON with `Content-Type: application/json`
+- Timestamps are in ISO 8601 format (UTC)
+
+## Response Format
+
+All responses are JSON with the following structure:
+
+### Success Response
 
 ```json
-"security": [
-  {
-    "bearerAuth": []
+{
+  "data": {
+    // Response data here
+  },
+  "meta": {
+    "request_id": "req_abc123",
+    "timestamp": "2024-01-15T10:30:00Z"
   }
-]
+}
 ```
+
+### Error Response
+
+```json
+{
+  "error": {
+    "code": "invalid_request",
+    "message": "The request body is malformed",
+    "details": {}
+  },
+  "meta": {
+    "request_id": "req_abc123",
+    "timestamp": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+## Rate Limits
+
+API requests are rate limited based on your plan:
+
+| Plan | Rate Limit |
+|------|------------|
+| Free | 100 requests/minute |
+| Pro | 1,000 requests/minute |
+| Enterprise | Custom |
+
+Rate limit headers are included in all responses:
+
+```
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 999
+X-RateLimit-Reset: 1705315800
+```
+
+When you exceed the rate limit, you'll receive a `429 Too Many Requests` response.
+
+## Pagination
+
+List endpoints return paginated results:
+
+```bash
+curl "https://api.anyway.sh/v1/traces?limit=50&cursor=abc123" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+Response includes pagination info:
+
+```json
+{
+  "data": [...],
+  "pagination": {
+    "limit": 50,
+    "has_more": true,
+    "next_cursor": "xyz789"
+  }
+}
+```
+
+## SDKs
+
+For most use cases, we recommend using the Python SDK instead of the REST API directly:
+
+```python
+pip install anyway-sdk
+```
+
+The SDK handles authentication, retries, and error handling automatically.
+
+## API Endpoints
+
+<CardGroup cols={2}>
+  <Card title="Telemetry" icon="wave-pulse" href="/api-reference/endpoint/ingest">
+    Ingest and query traces and metrics
+  </Card>
+  <Card title="Projects" icon="folder" href="/api-reference/endpoint/projects">
+    Manage projects and settings
+  </Card>
+  <Card title="API Keys" icon="key" href="/api-reference/endpoint/api-keys">
+    Create and manage API keys
+  </Card>
+  <Card title="Webhooks" icon="webhook" href="/api-reference/endpoint/webhooks">
+    Configure webhook notifications
+  </Card>
+</CardGroup>

@@ -1,0 +1,213 @@
+---
+title: "Projects"
+description: "Manage projects in your Anyway account"
+icon: "folder"
+---
+
+## GET /v1/projects
+
+List all projects.
+
+### Request
+
+```bash
+curl https://api.anyway.sh/v1/projects \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "proj_abc123",
+      "name": "Production App",
+      "slug": "production-app",
+      "environment": "production",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-15T10:30:00Z"
+    },
+    {
+      "id": "proj_def456",
+      "name": "Staging App",
+      "slug": "staging-app",
+      "environment": "staging",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-10T14:20:00Z"
+    }
+  ]
+}
+```
+
+---
+
+## POST /v1/projects
+
+Create a new project.
+
+### Request
+
+```bash
+curl -X POST https://api.anyway.sh/v1/projects \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My New Project",
+    "environment": "development"
+  }'
+```
+
+### Request Body
+
+<ParamField body="name" type="string" required>
+  Display name for the project.
+</ParamField>
+
+<ParamField body="environment" type="string" default="production">
+  Environment label: `development`, `staging`, `production`.
+</ParamField>
+
+<ParamField body="description" type="string">
+  Optional project description.
+</ParamField>
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "proj_ghi789",
+    "name": "My New Project",
+    "slug": "my-new-project",
+    "environment": "development",
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+---
+
+## GET /v1/projects/:project_id
+
+Get a single project.
+
+### Request
+
+```bash
+curl https://api.anyway.sh/v1/projects/proj_abc123 \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+### Path Parameters
+
+<ParamField path="project_id" type="string" required>
+  The project ID to retrieve.
+</ParamField>
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "proj_abc123",
+    "name": "Production App",
+    "slug": "production-app",
+    "environment": "production",
+    "description": "Main production application",
+    "settings": {
+      "sample_rate": 1.0,
+      "data_retention_days": 30
+    },
+    "stats": {
+      "traces_today": 15420,
+      "traces_this_month": 342000
+    },
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+---
+
+## PATCH /v1/projects/:project_id
+
+Update a project.
+
+### Request
+
+```bash
+curl -X PATCH https://api.anyway.sh/v1/projects/proj_abc123 \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Updated Project Name",
+    "settings": {
+      "sample_rate": 0.5
+    }
+  }'
+```
+
+### Request Body
+
+<ParamField body="name" type="string">
+  New display name.
+</ParamField>
+
+<ParamField body="description" type="string">
+  New description.
+</ParamField>
+
+<ParamField body="settings" type="object">
+  Project settings to update.
+</ParamField>
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "proj_abc123",
+    "name": "Updated Project Name",
+    "slug": "production-app",
+    "environment": "production",
+    "settings": {
+      "sample_rate": 0.5,
+      "data_retention_days": 30
+    },
+    "updated_at": "2024-01-15T11:00:00Z"
+  }
+}
+```
+
+---
+
+## DELETE /v1/projects/:project_id
+
+Delete a project.
+
+<Warning>
+  This action is irreversible. All traces and data associated with this project will be permanently deleted.
+</Warning>
+
+### Request
+
+```bash
+curl -X DELETE https://api.anyway.sh/v1/projects/proj_abc123 \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+### Response
+
+```
+HTTP/1.1 204 No Content
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| `not_found` | Project does not exist |
+| `conflict` | Cannot delete project with active API keys |

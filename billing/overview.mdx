@@ -1,0 +1,150 @@
+---
+title: "Billing Overview"
+description: "Understand Anyway pricing and billing"
+icon: "credit-card"
+---
+
+## Pricing Plans
+
+<CardGroup cols={3}>
+  <Card title="Free" icon="gift">
+    **$0/month**
+    - 10,000 traces/month
+    - 7-day retention
+    - 1 project
+    - Community support
+  </Card>
+
+  <Card title="Pro" icon="rocket">
+    **$49/month**
+    - 100,000 traces/month
+    - 30-day retention
+    - Unlimited projects
+    - Email support
+    - Custom dashboards
+  </Card>
+
+  <Card title="Enterprise" icon="building">
+    **Custom**
+    - Unlimited traces
+    - Custom retention
+    - SSO/SAML
+    - Dedicated support
+    - SLA guarantee
+  </Card>
+</CardGroup>
+
+## What Counts as a Trace?
+
+A **trace** represents one logical operation, which may contain multiple spans. For example:
+
+```
+1 trace = user-request
+├── span: validate-input
+├── span: openai.chat.completions (LLM call)
+├── span: process-response
+└── span: save-to-db
+```
+
+This entire operation counts as **1 trace**, not 4.
+
+## Usage-Based Pricing
+
+For high-volume users, we offer usage-based pricing:
+
+| Traces/month | Price per 1,000 traces |
+|--------------|------------------------|
+| Up to 100K | $0.50 |
+| 100K - 1M | $0.40 |
+| 1M - 10M | $0.30 |
+| 10M+ | Contact us |
+
+## Billing Cycle
+
+- Monthly billing on the anniversary of your subscription
+- Usage calculated at end of billing period
+- Overages billed at usage-based rates
+
+## Payment Methods
+
+We accept:
+
+- Credit/debit cards (Visa, Mastercard, Amex)
+- Bank transfer (Enterprise)
+- Wire transfer (Enterprise)
+
+## Viewing Your Bill
+
+1. Go to the [Dashboard](https://webapp.anyway.sh)
+2. Click **Settings** > **Billing**
+3. View:
+   - Current plan
+   - Usage this period
+   - Payment history
+   - Invoices
+
+## Changing Plans
+
+### Upgrading
+
+1. Go to **Settings** > **Billing**
+2. Click **Change Plan**
+3. Select new plan
+4. Confirm payment method
+
+Upgrades take effect immediately. You'll be charged a prorated amount for the remainder of the billing period.
+
+### Downgrading
+
+1. Go to **Settings** > **Billing**
+2. Click **Change Plan**
+3. Select new plan
+
+Downgrades take effect at the end of your current billing period. Make sure your usage fits within the new plan's limits.
+
+## Cancellation
+
+To cancel your subscription:
+
+1. Go to **Settings** > **Billing**
+2. Click **Cancel Subscription**
+3. Confirm cancellation
+
+Your account will remain active until the end of the current billing period. Data will be retained for 30 days after cancellation.
+
+## Invoices
+
+Invoices are generated monthly and available in PDF format. They include:
+
+- Billing period
+- Plan charges
+- Usage charges (if applicable)
+- Tax (if applicable)
+- Total amount
+
+Download invoices from **Settings** > **Billing** > **Invoices**.
+
+## Tax Information
+
+- Prices are exclusive of tax
+- Tax is calculated based on your billing address
+- For EU customers: VAT is applied
+- For US customers: Sales tax may apply based on state
+- Tax-exempt? Contact support with documentation
+
+## Questions?
+
+<Card title="Contact Support" icon="headset" href="mailto:support@anyway.sh">
+  Have billing questions? Our team is here to help.
+</Card>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Usage Limits" icon="gauge" href="/billing/usage-limits">
+    Understand and manage usage limits
+  </Card>
+  <Card title="Cost Tracking" icon="dollar-sign" href="/features/cost-tracking">
+    Track your AI spend
+  </Card>
+</CardGroup>

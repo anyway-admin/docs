@@ -1,0 +1,183 @@
+---
+title: "Usage Limits"
+description: "Understand and manage your usage quotas"
+icon: "gauge"
+---
+
+## Plan Limits
+
+Each plan has the following limits:
+
+| Resource | Free | Pro | Enterprise |
+|----------|------|-----|------------|
+| Traces/month | 10,000 | 100,000 | Unlimited |
+| Data retention | 7 days | 30 days | Custom |
+| Projects | 1 | Unlimited | Unlimited |
+| Team members | 1 | 10 | Unlimited |
+| API rate limit | 100/min | 1,000/min | Custom |
+| Dashboards | 3 | Unlimited | Unlimited |
+| Alerts | 3 | 20 | Unlimited |
+
+## Checking Your Usage
+
+View current usage in the dashboard:
+
+1. Go to **Settings** > **Usage**
+2. See current period usage:
+   - Traces sent
+   - Percentage of limit used
+   - Days remaining in period
+
+Or via API:
+
+```bash
+curl https://api.anyway.sh/v1/usage \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```json
+{
+  "plan": "pro",
+  "period": {
+    "start": "2024-01-01",
+    "end": "2024-01-31"
+  },
+  "traces": {
+    "used": 45000,
+    "limit": 100000,
+    "percentage": 45
+  }
+}
+```
+
+## What Happens When You Hit Limits
+
+### Trace Limits
+
+When you reach your trace limit:
+
+1. **Warning at 80%** - Email notification
+2. **Warning at 100%** - Dashboard notification
+3. **At limit** - New traces are still accepted but:
+   - Free: Oldest traces are dropped
+   - Pro: Overage charges apply ($0.50/1,000 traces)
+   - Enterprise: No overage (unlimited)
+
+<Warning>
+  On the Free plan, exceeding limits will cause data loss. Upgrade to Pro to avoid this.
+</Warning>
+
+### API Rate Limits
+
+When you exceed API rate limits:
+
+- Requests return `429 Too Many Requests`
+- Retry after the period shown in `Retry-After` header
+- Consider implementing exponential backoff
+
+```python
+import time
+import anyway
+
+try:
+    anyway.send_trace(trace)
+except anyway.RateLimitError as e:
+    time.sleep(e.retry_after)
+    anyway.send_trace(trace)  # Retry
+```
+
+## Increasing Limits
+
+### Upgrade Your Plan
+
+The easiest way to increase limits is to upgrade:
+
+1. Go to **Settings** > **Billing**
+2. Click **Change Plan**
+3. Select a higher tier
+
+### Request Custom Limits
+
+Enterprise customers can request custom limits:
+
+- Higher API rate limits
+- Extended data retention
+- Increased team member limits
+
+Contact [support@anyway.sh](mailto:support@anyway.sh) to discuss.
+
+## Optimizing Usage
+
+### Reduce Trace Volume
+
+If you're approaching limits, consider:
+
+<AccordionGroup>
+  <Accordion title="Sample traces" icon="filter">
+    Don't trace every request in production:
+    ```python
+    anyway.init(sample_rate=0.1)  # 10% sampling
+    ```
+  </Accordion>
+
+  <Accordion title="Filter by importance" icon="star">
+    Only trace important operations:
+    ```python
+    anyway.init(
+        trace_filter=lambda span: span.latency > 1000  # Only slow requests
+    )
+    ```
+  </Accordion>
+
+  <Accordion title="Use environments" icon="layer-group">
+    Only trace production, not development:
+    ```python
+    anyway.init(
+        enabled=os.getenv("ENV") == "production"
+    )
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Reduce Data Size
+
+Smaller traces use less quota:
+
+- Avoid tracing large payloads
+- Use `max_payload_size` configuration
+- Exclude sensitive/unnecessary fields
+
+## Usage Alerts
+
+Set up alerts to avoid surprise limits:
+
+1. Go to **Settings** > **Alerts**
+2. Create a usage alert:
+   - Trigger at 50%, 80%, 90% usage
+   - Notify via email or Slack
+
+## Usage History
+
+View historical usage:
+
+1. Go to **Settings** > **Usage**
+2. Select date range
+3. View daily/weekly/monthly breakdown
+
+Export usage data for reporting:
+
+```bash
+curl "https://api.anyway.sh/v1/usage/history?start=2024-01-01&end=2024-01-31" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Billing Overview" icon="credit-card" href="/billing/overview">
+    View pricing plans
+  </Card>
+  <Card title="Cost Tracking" icon="dollar-sign" href="/features/cost-tracking">
+    Optimize your AI spend
+  </Card>
+</CardGroup>

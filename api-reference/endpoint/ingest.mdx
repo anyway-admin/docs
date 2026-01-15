@@ -1,0 +1,147 @@
+---
+title: "Ingest Telemetry"
+description: "Send traces and metrics to Anyway"
+icon: "upload"
+---
+
+## POST /v1/ingest
+
+Ingest telemetry data (traces and metrics) into Anyway.
+
+<Note>
+  For most use cases, use the Python SDK which handles batching, retries, and serialization automatically.
+</Note>
+
+### Request
+
+```bash
+curl -X POST https://api.anyway.sh/v1/ingest \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "traces": [...],
+    "metrics": [...]
+  }'
+```
+
+### Request Body
+
+<ParamField body="traces" type="array">
+  Array of trace objects to ingest.
+</ParamField>
+
+<ParamField body="metrics" type="array">
+  Array of metric objects to ingest.
+</ParamField>
+
+### Trace Object
+
+<Expandable title="Trace fields">
+  <ParamField body="trace_id" type="string" required>
+    Unique identifier for the trace (32 hex characters).
+  </ParamField>
+
+  <ParamField body="spans" type="array" required>
+    Array of span objects within this trace.
+  </ParamField>
+</Expandable>
+
+### Span Object
+
+<Expandable title="Span fields">
+  <ParamField body="span_id" type="string" required>
+    Unique identifier for the span (16 hex characters).
+  </ParamField>
+
+  <ParamField body="parent_span_id" type="string">
+    Parent span ID for nested spans.
+  </ParamField>
+
+  <ParamField body="name" type="string" required>
+    Name of the operation.
+  </ParamField>
+
+  <ParamField body="start_time" type="string" required>
+    ISO 8601 timestamp of when the span started.
+  </ParamField>
+
+  <ParamField body="end_time" type="string" required>
+    ISO 8601 timestamp of when the span ended.
+  </ParamField>
+
+  <ParamField body="attributes" type="object">
+    Key-value pairs of span attributes.
+  </ParamField>
+
+  <ParamField body="status" type="object">
+    Span status (code and message).
+  </ParamField>
+</Expandable>
+
+### Example Request
+
+```json
+{
+  "traces": [
+    {
+      "trace_id": "4bf92f3577b34da6a3ce929d0e0e4736",
+      "spans": [
+        {
+          "span_id": "00f067aa0ba902b7",
+          "name": "openai.chat.completions",
+          "start_time": "2024-01-15T10:30:00.000Z",
+          "end_time": "2024-01-15T10:30:01.234Z",
+          "attributes": {
+            "llm.vendor": "openai",
+            "llm.model": "gpt-4",
+            "llm.tokens.input": 150,
+            "llm.tokens.output": 200,
+            "llm.cost": 0.0135
+          },
+          "status": {
+            "code": "OK"
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Response
+
+<ResponseField name="data" type="object">
+  <Expandable title="Response fields">
+    <ResponseField name="traces_received" type="integer">
+      Number of traces received.
+    </ResponseField>
+    <ResponseField name="spans_received" type="integer">
+      Number of spans received.
+    </ResponseField>
+    <ResponseField name="metrics_received" type="integer">
+      Number of metrics received.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+```json
+{
+  "data": {
+    "traces_received": 1,
+    "spans_received": 1,
+    "metrics_received": 0
+  },
+  "meta": {
+    "request_id": "req_abc123",
+    "timestamp": "2024-01-15T10:30:02Z"
+  }
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| `invalid_request` | Request body is malformed |
+| `invalid_trace` | Trace object is invalid |
+| `quota_exceeded` | Monthly trace quota exceeded |

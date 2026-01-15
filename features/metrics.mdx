@@ -1,0 +1,143 @@
+---
+title: "Metrics & Analytics"
+description: "Monitor your AI application performance with metrics"
+icon: "chart-line"
+---
+
+## Overview
+
+Anyway automatically collects and aggregates metrics from your AI operations, giving you insights into:
+
+- Request volume and throughput
+- Latency distributions
+- Token usage patterns
+- Error rates
+- Cost trends
+
+## Automatic Metrics
+
+The following metrics are collected automatically:
+
+### Request Metrics
+
+| Metric | Type | Description |
+|--------|------|-------------|
+| `llm.requests.total` | Counter | Total number of LLM requests |
+| `llm.requests.success` | Counter | Successful requests |
+| `llm.requests.error` | Counter | Failed requests |
+| `llm.requests.duration_ms` | Histogram | Request latency distribution |
+
+### Token Metrics
+
+| Metric | Type | Description |
+|--------|------|-------------|
+| `llm.tokens.input` | Counter | Total input tokens |
+| `llm.tokens.output` | Counter | Total output tokens |
+| `llm.tokens.total` | Counter | Total tokens (input + output) |
+
+### Cost Metrics
+
+| Metric | Type | Description |
+|--------|------|-------------|
+| `llm.cost.total` | Counter | Total estimated cost in USD |
+
+## Metric Dimensions
+
+Metrics are tagged with dimensions for filtering and grouping:
+
+- `model` - The LLM model used
+- `vendor` - The provider (openai, anthropic)
+- `environment` - Your environment (production, staging)
+- `project` - Your project name
+- `status` - Request status (success, error)
+
+## Viewing Metrics
+
+In the [Anyway Dashboard](https://webapp.anyway.sh):
+
+1. Navigate to **Metrics**
+2. Select a metric from the dropdown
+3. Apply filters (time range, model, environment)
+4. Choose visualization (line chart, bar chart, table)
+
+## Common Queries
+
+### Requests per minute by model
+
+```sql
+SELECT
+  model,
+  count(*) / 60 as rpm
+FROM llm_requests
+WHERE timestamp > now() - interval '1 hour'
+GROUP BY model
+```
+
+### P99 latency by model
+
+```sql
+SELECT
+  model,
+  percentile_cont(0.99) WITHIN GROUP (ORDER BY duration_ms) as p99
+FROM llm_requests
+WHERE timestamp > now() - interval '1 day'
+GROUP BY model
+```
+
+### Cost by environment
+
+```sql
+SELECT
+  environment,
+  sum(cost) as total_cost
+FROM llm_requests
+WHERE timestamp > now() - interval '7 days'
+GROUP BY environment
+```
+
+## Custom Metrics
+
+Record custom metrics using the SDK:
+
+```python
+import anyway
+
+# Increment a counter
+anyway.metrics.increment("custom.processed_items", tags={"type": "document"})
+
+# Record a gauge value
+anyway.metrics.gauge("custom.queue_size", queue.size())
+
+# Record a histogram value
+anyway.metrics.histogram("custom.processing_time_ms", processing_time)
+```
+
+## Alerting
+
+Set up alerts based on metric thresholds:
+
+1. Go to **Alerts** in the dashboard
+2. Click **Create Alert**
+3. Define conditions:
+   - Metric: `llm.requests.error`
+   - Condition: `> 10` in last 5 minutes
+4. Configure notifications (email, Slack, webhook)
+
+## Data Retention
+
+| Plan | Retention |
+|------|-----------|
+| Free | 7 days |
+| Pro | 30 days |
+| Enterprise | Custom |
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Cost Tracking" icon="dollar-sign" href="/features/cost-tracking">
+    Monitor AI spending
+  </Card>
+  <Card title="Dashboards" icon="chart-pie" href="/features/dashboards">
+    Build custom dashboards
+  </Card>
+</CardGroup>

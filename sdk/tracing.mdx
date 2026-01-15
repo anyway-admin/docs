@@ -1,0 +1,332 @@
+---
+title: "Tracing LLM Calls"
+description: "Trace your LLM operations with @workflow and @task decorators"
+icon: "route"
+---
+
+## Overview
+
+The Anyway SDK provides two decorators to structure your traces:
+
+- **`@workflow`** - High-level operations that orchestrate multiple tasks
+- **`@task`** - Individual units of work (like LLM calls)
+
+These work identically with any LLM provider.
+
+## Basic Setup
+
+```python
+from anyway.sdk import Traceloop
+from anyway.sdk.decorators import workflow, task
+
+Traceloop.init(app_name="my-app")
+```
+
+## The @workflow Decorator
+
+Use `@workflow` for top-level operations that coordinate multiple steps:
+
+```python
+@workflow(name="process_document")
+def process_document(doc: str) -> dict:
+    summary = summarize(doc)
+    keywords = extract_keywords(doc)
+    return {"summary": summary, "keywords": keywords}
+```
+
+Workflows create parent spans that contain all nested operations.
+
+## The @task Decorator
+
+Use `@task` for individual operations, especially LLM calls:
+
+```python
+@task(name="summarize")
+def summarize(text: str) -> str:
+    # Your LLM call here
+    return result
+```
+
+Tasks create child spans within workflows.
+
+## Complete Example
+
+<Tabs>
+  <Tab title="OpenAI">
+    ```python
+    from anyway.sdk import Traceloop
+    from anyway.sdk.decorators import workflow, task
+    from openai import OpenAI
+
+    Traceloop.init(app_name="document-processor")
+    client = OpenAI()
+
+    @task(name="summarize")
+    def summarize(text: str) -> str:
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "Summarize the text concisely."},
+                {"role": "user", "content": text}
+            ]
+        )
+        return response.choices[0].message.content
+
+    @task(name="extract_keywords")
+    def extract_keywords(text: str) -> list:
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "Extract 5 keywords. Return comma-separated."},
+                {"role": "user", "content": text}
+            ]
+        )
+        return response.choices[0].message.content.split(", ")
+
+    @workflow(name="process_document")
+    def process_document(document: str) -> dict:
+        summary = summarize(document)
+        keywords = extract_keywords(document)
+        return {"summary": summary, "keywords": keywords}
+
+    # Run it
+    result = process_document("Your document text here...")
+    ```
+  </Tab>
+  <Tab title="Anthropic">
+    ```python
+    from anyway.sdk import Traceloop
+    from anyway.sdk.decorators import workflow, task
+    from anthropic import Anthropic
+
+    Traceloop.init(app_name="document-processor")
+    client = Anthropic()
+
+    @task(name="summarize")
+    def summarize(text: str) -> str:
+        message = client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=1024,
+            system="Summarize the text concisely.",
+            messages=[{"role": "user", "content": text}]
+        )
+        return message.content[0].text
+
+    @task(name="extract_keywords")
+    def extract_keywords(text: str) -> list:
+        message = client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=256,
+            system="Extract 5 keywords. Return comma-separated.",
+            messages=[{"role": "user", "content": text}]
+        )
+        return message.content[0].text.split(", ")
+
+    @workflow(name="process_document")
+    def process_document(document: str) -> dict:
+        summary = summarize(document)
+        keywords = extract_keywords(document)
+        return {"summary": summary, "keywords": keywords}
+
+    # Run it
+    result = process_document("Your document text here...")
+    ```
+  </Tab>
+</Tabs>
+
+## Streaming
+
+<Tabs>
+  <Tab title="OpenAI">
+    ```python
+    @task(name="stream_chat")
+    def stream_chat(prompt: str) -> str:
+        stream = client.chat.completions.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": prompt}],
+            stream=True
+        )
+
+        full_response = ""
+        for chunk in stream:
+            content = chunk.choices[0].delta.content or ""
+            full_response += content
+            print(content, end="", flush=True)
+
+        return full_response
+    ```
+  </Tab>
+  <Tab title="Anthropic">
+    ```python
+    @task(name="stream_chat")
+    def stream_chat(prompt: str) -> str:
+        full_response = ""
+
+        with client.messages.stream(
+            model="claude-sonnet-4-20250514",
+            max_tokens=1024,
+            messages=[{"role": "user", "content": prompt}]
+        ) as stream:
+            for text in stream.text_stream:
+                full_response += text
+                print(text, end="", flush=True)
+
+        return full_response
+    ```
+  </Tab>
+</Tabs>
+
+## Tool Use / Function Calling
+
+<Tabs>
+  <Tab title="OpenAI">
+    ```python
+    tools = [
+        {
+            "type": "function",
+            "function": {
+                "name": "get_weather",
+                "description": "Get the current weather",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "location": {"type": "string"}
+                    },
+                    "required": ["location"]
+                }
+            }
+        }
+    ]
+
+    @task(name="call_with_tools")
+    def call_with_tools(query: str):
+        return client.chat.completions.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": query}],
+            tools=tools
+        )
+
+    @task(name="execute_tool")
+    def execute_tool(tool_call):
+        if tool_call.function.name == "get_weather":
+            return {"temperature": "72°F", "condition": "sunny"}
+
+    @workflow(name="tool_workflow")
+    def tool_workflow(query: str):
+        response = call_with_tools(query)
+        if response.choices[0].message.tool_calls:
+            for tool_call in response.choices[0].message.tool_calls:
+                result = execute_tool(tool_call)
+        return response
+    ```
+  </Tab>
+  <Tab title="Anthropic">
+    ```python
+    tools = [
+        {
+            "name": "get_weather",
+            "description": "Get the current weather",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "location": {"type": "string"}
+                },
+                "required": ["location"]
+            }
+        }
+    ]
+
+    @task(name="call_with_tools")
+    def call_with_tools(query: str):
+        return client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=1024,
+            tools=tools,
+            messages=[{"role": "user", "content": query}]
+        )
+
+    @task(name="execute_tool")
+    def execute_tool(tool_use):
+        if tool_use.name == "get_weather":
+            return {"temperature": "72°F", "condition": "sunny"}
+
+    @workflow(name="tool_workflow")
+    def tool_workflow(query: str):
+        response = call_with_tools(query)
+        for block in response.content:
+            if block.type == "tool_use":
+                result = execute_tool(block)
+        return response
+    ```
+  </Tab>
+</Tabs>
+
+## Async Support
+
+Both decorators work seamlessly with async functions:
+
+<Tabs>
+  <Tab title="OpenAI">
+    ```python
+    from openai import AsyncOpenAI
+
+    async_client = AsyncOpenAI()
+
+    @task(name="async_chat")
+    async def async_chat(prompt: str) -> str:
+        response = await async_client.chat.completions.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": prompt}]
+        )
+        return response.choices[0].message.content
+
+    @workflow(name="async_workflow")
+    async def async_workflow(questions: list[str]) -> list[str]:
+        import asyncio
+        tasks = [async_chat(q) for q in questions]
+        return await asyncio.gather(*tasks)
+    ```
+  </Tab>
+  <Tab title="Anthropic">
+    ```python
+    from anthropic import AsyncAnthropic
+
+    async_client = AsyncAnthropic()
+
+    @task(name="async_chat")
+    async def async_chat(prompt: str) -> str:
+        message = await async_client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=1024,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        return message.content[0].text
+
+    @workflow(name="async_workflow")
+    async def async_workflow(questions: list[str]) -> list[str]:
+        import asyncio
+        tasks = [async_chat(q) for q in questions]
+        return await asyncio.gather(*tasks)
+    ```
+  </Tab>
+</Tabs>
+
+## View in Dashboard
+
+After running your code, view traces in the [Anyway Dashboard](https://webapp.anyway.sh):
+
+1. Navigate to **Traces**
+2. Find your workflow trace
+3. Expand to see nested task spans
+4. View timing, inputs, and outputs for each operation
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="gear" href="/sdk/configuration">
+    Configure endpoints and authentication
+  </Card>
+  <Card title="Cost Tracking" icon="dollar-sign" href="/features/cost-tracking">
+    Monitor your AI spend
+  </Card>
+</CardGroup>

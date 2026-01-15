@@ -1,0 +1,162 @@
+---
+title: "Dashboards"
+description: "Create custom dashboards to visualize your AI operations"
+icon: "chart-pie"
+---
+
+## Overview
+
+Anyway Dashboards let you visualize traces, metrics, and costs in one place. Create custom views for different teams and use cases.
+
+## Built-in Dashboards
+
+Anyway provides several pre-built dashboards:
+
+### Overview Dashboard
+
+The default dashboard showing:
+- Total requests (24h)
+- Total tokens used
+- Total cost
+- Error rate
+- Top models by usage
+
+### Performance Dashboard
+
+Deep dive into latency and performance:
+- P50, P90, P99 latency by model
+- Latency trends over time
+- Slow requests table
+- Throughput (requests per minute)
+
+### Cost Dashboard
+
+Financial insights:
+- Daily/weekly/monthly spend
+- Cost breakdown by model
+- Cost by user attribute
+- Budget vs actual
+
+## Creating Custom Dashboards
+
+1. Go to **Dashboards** in the sidebar
+2. Click **+ New Dashboard**
+3. Name your dashboard
+4. Add widgets
+
+## Widget Types
+
+<CardGroup cols={2}>
+  <Card title="Line Chart" icon="chart-line">
+    Time series data (latency trends, request volume)
+  </Card>
+  <Card title="Bar Chart" icon="chart-bar">
+    Categorical comparisons (cost by model, requests by user)
+  </Card>
+  <Card title="Stat" icon="hashtag">
+    Single values with trends (total cost, error count)
+  </Card>
+  <Card title="Table" icon="table">
+    Detailed data (recent traces, top users)
+  </Card>
+  <Card title="Pie Chart" icon="chart-pie">
+    Distribution views (model usage share)
+  </Card>
+  <Card title="Heatmap" icon="grid">
+    Time-based patterns (requests by hour/day)
+  </Card>
+</CardGroup>
+
+## Adding Widgets
+
+1. Click **+ Add Widget** on your dashboard
+2. Select widget type
+3. Configure the query:
+   - Select metric or trace data
+   - Apply filters
+   - Choose aggregation (sum, avg, count, percentile)
+   - Group by dimension
+4. Customize appearance:
+   - Title
+   - Colors
+   - Legend position
+5. Save
+
+## Example Widgets
+
+### Requests by Model (Pie Chart)
+
+```yaml
+type: pie
+metric: llm.requests.total
+groupBy: model
+timeRange: 24h
+```
+
+### P99 Latency Trend (Line Chart)
+
+```yaml
+type: line
+metric: llm.requests.duration_ms
+aggregation: p99
+groupBy: model
+timeRange: 7d
+interval: 1h
+```
+
+### Top 10 Expensive Users (Table)
+
+```yaml
+type: table
+metric: llm.cost.total
+groupBy: user_id
+aggregation: sum
+orderBy: desc
+limit: 10
+timeRange: 30d
+```
+
+## Sharing Dashboards
+
+Share dashboards with your team:
+
+- **View link** - Read-only access via URL
+- **Team access** - Grant access to team members
+- **Embed** - Embed in internal tools (Enterprise)
+
+## Dashboard Variables
+
+Use variables for dynamic filtering:
+
+1. Add a variable (e.g., `$environment`)
+2. Reference in widget queries
+3. Filter using dropdown at dashboard top
+
+```yaml
+metric: llm.requests.total
+filters:
+  environment: $environment
+```
+
+## Scheduling Reports
+
+Schedule dashboard snapshots:
+
+1. Open dashboard settings
+2. Click **Schedule Report**
+3. Configure:
+   - Frequency (daily, weekly)
+   - Recipients (email)
+   - Time zone
+4. Save
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Tracing" icon="route" href="/features/tracing">
+    Learn about traces
+  </Card>
+  <Card title="Metrics" icon="chart-line" href="/features/metrics">
+    Understand available metrics
+  </Card>
+</CardGroup>

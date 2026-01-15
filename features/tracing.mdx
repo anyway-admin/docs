@@ -1,0 +1,146 @@
+---
+title: "Distributed Tracing"
+description: "Understand and debug your AI application with distributed tracing"
+icon: "route"
+---
+
+## Overview
+
+Anyway provides OpenTelemetry-compatible distributed tracing for your AI applications. Traces help you:
+
+- Debug issues by following requests through your system
+- Identify performance bottlenecks
+- Understand the flow of AI operations
+- Correlate LLM calls with your application logic
+
+## How Tracing Works
+
+Every AI operation creates a **trace** composed of **spans**:
+
+```
+Trace: user-request
+├── Span: validate-input (2ms)
+├── Span: openai.chat.completions (1,234ms)
+│   └── Attributes: model=gpt-4, tokens=150, cost=$0.045
+├── Span: process-response (5ms)
+└── Span: save-to-db (12ms)
+```
+
+## Automatic Spans
+
+The Anyway SDK automatically creates spans for:
+
+- OpenAI API calls
+- Anthropic API calls
+- HTTP requests (optional)
+- Database queries (optional)
+
+## Custom Spans
+
+Create custom spans to trace your application logic:
+
+```python
+import anyway
+
+with anyway.trace("process-user-request") as span:
+    span.set_attribute("user_id", user_id)
+
+    # Nested span for validation
+    with anyway.trace("validate-input") as validation_span:
+        validate(user_input)
+
+    # LLM call - automatically traced
+    response = client.chat.completions.create(
+        model="gpt-4",
+        messages=[{"role": "user", "content": user_input}]
+    )
+
+    # Another nested span
+    with anyway.trace("save-response") as save_span:
+        save_to_database(response)
+```
+
+## Span Attributes
+
+Add context to your spans with attributes:
+
+```python
+with anyway.trace("user-query") as span:
+    span.set_attribute("user.id", "user-123")
+    span.set_attribute("user.tier", "premium")
+    span.set_attribute("feature", "chat")
+    span.set_attribute("conversation.id", "conv-456")
+    # ... your code
+```
+
+### Reserved Attributes
+
+These attributes are automatically set for LLM spans:
+
+| Attribute | Description |
+|-----------|-------------|
+| `llm.vendor` | Provider (openai, anthropic) |
+| `llm.model` | Model name |
+| `llm.tokens.input` | Input/prompt tokens |
+| `llm.tokens.output` | Output/completion tokens |
+| `llm.tokens.total` | Total tokens |
+| `llm.cost` | Estimated cost in USD |
+| `llm.latency_ms` | Request latency |
+
+## Viewing Traces
+
+In the [Anyway Dashboard](https://webapp.anyway.sh):
+
+1. Navigate to **Traces**
+2. Use filters to find specific traces:
+   - Time range
+   - Model
+   - Latency threshold
+   - Cost threshold
+   - Custom attributes
+3. Click a trace to see the full span tree
+
+## Trace Context Propagation
+
+Anyway automatically propagates trace context across:
+
+- Async functions
+- Thread pools
+- HTTP requests (with headers)
+
+For manual propagation:
+
+```python
+# Get current trace context
+context = anyway.get_current_context()
+
+# In another thread/process
+anyway.set_context(context)
+```
+
+## Sampling
+
+Control trace sampling to manage costs:
+
+```python
+anyway.init(
+    sample_rate=0.1  # Sample 10% of traces
+)
+```
+
+For production, consider sampling strategies:
+
+- Sample all errors (100%)
+- Sample high-latency requests
+- Sample a percentage of successful requests
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Metrics" icon="chart-line" href="/features/metrics">
+    Aggregate metrics from traces
+  </Card>
+  <Card title="Dashboards" icon="chart-pie" href="/features/dashboards">
+    Visualize your traces
+  </Card>
+</CardGroup>
