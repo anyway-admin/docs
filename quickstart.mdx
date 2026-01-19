@@ -11,7 +11,7 @@ Follow these steps to instrument your first LLM application with Anyway.
   <Step title="Create an Account">
     Sign up at [webapp.anyway.sh](https://webapp.anyway.sh) and create your first project.
 
-    Once logged in, navigate to **Settings** > **API Keys** and create a new API key.
+    Once logged in, navigate to **Developer** > **API Keys** and create a new SDK API key.
 
     <Warning>
       Keep your API key secure. Never commit it to version control.
@@ -26,55 +26,24 @@ Follow these steps to instrument your first LLM application with Anyway.
     ```
   </Step>
 
-  <Step title="Configure Environment">
-    Set your collector endpoint and authentication:
-
-    ```bash
-    # Collector endpoint
-    export TRACELOOP_BASE_URL="collector.anyway.sh:4317"
-
-    # Authentication (URL-encoded)
-    export TRACELOOP_HEADERS="Authorization=Bearer%20your-api-key"
-    ```
-  </Step>
-
   <Step title="Initialize the SDK">
-    Initialize Traceloop in your application:
+    Initialize Traceloop in your application with your API key:
 
     ```python
     from anyway.sdk import Traceloop
 
-    Traceloop.init(app_name="my-app")
+    Traceloop.init(
+        app_name="my-app",
+        api_endpoint="collector.anyway.sh:4317",
+        headers={"Authorization": "Bearer your-api-key"}
+    )
     ```
   </Step>
 
-  <Step title="Add Tracing Decorators">
-    Use `@workflow` and `@task` decorators to trace your LLM operations:
+  <Step title="Start Tracing">
+    The SDK automatically instruments LLM calls from OpenAI, Anthropic, and other providers.
 
-    ```python
-    from anyway.sdk import Traceloop
-    from anyway.sdk.decorators import workflow, task
-    from openai import OpenAI
-
-    Traceloop.init(app_name="my-app")
-    client = OpenAI()
-
-    @task(name="call_openai")
-    def call_openai(prompt: str) -> str:
-        response = client.chat.completions.create(
-            model="gpt-4",
-            messages=[{"role": "user", "content": prompt}]
-        )
-        return response.choices[0].message.content
-
-    @workflow(name="answer_question")
-    def answer_question(question: str) -> str:
-        return call_openai(question)
-
-    # Run it
-    result = answer_question("What is observability?")
-    print(result)
-    ```
+    For custom workflow tracing with `@workflow` and `@task` decorators, see [Tracing LLM Calls](/sdk/tracing).
   </Step>
 
   <Step title="View Your Traces">
@@ -89,49 +58,6 @@ Follow these steps to instrument your first LLM application with Anyway.
     Click on any trace to see the full span tree.
   </Step>
 </Steps>
-
-## Understanding Workflows and Tasks
-
-The SDK uses two decorators to structure your traces:
-
-### @workflow
-
-Use `@workflow` for high-level operations that orchestrate multiple steps:
-
-```python
-@workflow(name="process_document")
-def process_document(doc: str):
-    summary = summarize(doc)
-    entities = extract_entities(doc)
-    return {"summary": summary, "entities": entities}
-```
-
-### @task
-
-Use `@task` for individual units of work:
-
-```python
-@task(name="summarize")
-def summarize(text: str) -> str:
-    response = client.chat.completions.create(...)
-    return response.choices[0].message.content
-```
-
-### Async Support
-
-Both decorators work seamlessly with async functions:
-
-```python
-@workflow(name="async_pipeline")
-async def async_pipeline(query: str):
-    result = await async_task(query)
-    return result
-
-@task(name="async_task")
-async def async_task(query: str):
-    response = await client.chat.completions.create(...)
-    return response
-```
 
 ## Next Steps
 
