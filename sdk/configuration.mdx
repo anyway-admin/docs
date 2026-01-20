@@ -60,6 +60,8 @@ Traceloop.init(
 | `api_endpoint` | string | Collector endpoint URL. Overrides `TRACELOOP_BASE_URL` |
 | `headers` | dict | Authentication headers. Overrides `TRACELOOP_HEADERS` |
 | `exporter` | Exporter | Custom OpenTelemetry exporter for advanced use cases |
+| `pricing_json_path` | string | Path to a custom pricing JSON file for cost calculations |
+| `disable_batch` | boolean | Disable batching of traces (useful for debugging) |
 
 ## Custom Exporters
 
@@ -81,6 +83,61 @@ Traceloop.init(
 ```
 
 This allows integration with any OpenTelemetry-compatible backend.
+
+## Custom Pricing
+
+You can provide your own pricing data to calculate costs for models not included in the default pricing or to override existing prices:
+
+```python
+from anyway.sdk import Traceloop
+
+Traceloop.init(
+    app_name="support-agent",
+    api_endpoint="http://your-collector:4318",
+    headers={"Authorization": "your-api-key"},
+    pricing_json_path="./pricing.json",
+    disable_batch=True,
+)
+```
+
+### Default Pricing
+
+If no custom pricing JSON is provided, Anyway uses a [default pricing file](https://github.com/anyway-platform/anyway-tracing/blob/main/packages/anyway-sdk/anyway/sdk/pricing/data/default_pricing.json) that includes pricing for popular models from OpenAI, Anthropic, Google, Meta, and other providers.
+
+### Pricing JSON Format
+
+The pricing JSON file should follow this structure:
+
+```json
+{
+  "chat": {
+    "model-name": {
+      "promptPrice": 0.00015,
+      "completionPrice": 0.0006
+    }
+  }
+}
+```
+
+- `promptPrice`: Cost per 1K input tokens
+- `completionPrice`: Cost per 1K output tokens
+
+Example with multiple models:
+
+```json
+{
+  "chat": {
+    "gpt-4o-mini": {
+      "promptPrice": 0.00015,
+      "completionPrice": 0.0006
+    },
+    "custom-model": {
+      "promptPrice": 0.0002,
+      "completionPrice": 0.008
+    }
+  }
+}
+```
 
 ## Environment-Based Configuration
 
